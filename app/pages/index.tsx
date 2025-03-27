@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { ClientOnly } from '#components'
 import * as THREE from 'three'
 
@@ -6,34 +5,39 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+
 import { defineComponent, nextTick, onMounted, ref } from 'vue'
 
 export default defineComponent({
   name: 'ThreeJSScene',
   setup() {
+    const logger = useLogger()
+
     let mixer: THREE.AnimationMixer
     const clock = new THREE.Clock()
     const containerRef = ref<HTMLElement | null>(null)
-    let camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, stats: Stats
+
+    let camera: THREE.PerspectiveCamera,
+      scene: THREE.Scene,
+      renderer: THREE.WebGLRenderer,
+      stats: Stats
 
     onMounted(() => {
-      // 确保DOM元素已经挂载
       nextTick(() => {
         if (containerRef.value) {
           init()
           animate()
         }
         else {
-          console.error('Container element not found')
+          logger.error('Container element not found')
         }
       })
     })
 
     function init() {
-      // 使用ref获取的DOM元素
       const container = containerRef.value
       if (!container) {
-        console.error('Container element is null')
+        logger.error('Container element is null')
         return
       }
 
@@ -109,11 +113,11 @@ export default defineComponent({
         },
         // 添加进度回调
         (xhr) => {
-          console.log(`${xhr.loaded / xhr.total * 100}% loaded`)
+          logger.log(`${xhr.loaded / xhr.total * 100}% loaded`)
         },
         // 添加错误回调
         (error) => {
-          console.error('An error happened during model loading:', error)
+          logger.error('An error happened during model loading:', error)
         },
       )
 
@@ -128,7 +132,7 @@ export default defineComponent({
           },
           undefined,
           (error) => {
-            console.error('An error happened during texture loading:', error)
+            logger.error('An error happened during texture loading:', error)
             // 如果HDR加载失败，设置一个默认背景色
             scene.background = new THREE.Color(0x333333)
           },
@@ -188,6 +192,9 @@ export default defineComponent({
         stats.update()
       }
 
+      /**
+       *
+       */
       if (renderer && scene && camera) {
         renderer.render(scene, camera)
       }
