@@ -8,4 +8,8 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
   modules: ['@nuxt/fonts', '@unocss/nuxt'],
+
+  css: [
+    './app/styles/global.css',
+  ],
 })
