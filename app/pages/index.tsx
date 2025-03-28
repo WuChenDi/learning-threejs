@@ -13,6 +13,7 @@ export default defineComponent({
   name: 'webglAnimationKeyframes',
   setup() {
     const logger = useLogger()
+
     const containerRef = ref<HTMLDivElement | null>(null)
     const clock = new THREE.Clock()
 
@@ -23,7 +24,7 @@ export default defineComponent({
       controls: OrbitControls,
       stats: Stats
 
-    const onResize = () => {
+    const onWindowResize = () => {
       if (!containerRef.value || !camera || !renderer) {
         return
       }
@@ -119,7 +120,7 @@ export default defineComponent({
         },
       )
 
-      window.addEventListener('resize', onResize)
+      window.addEventListener('resize', onWindowResize)
     }
 
     onMounted(() => {
@@ -139,7 +140,7 @@ export default defineComponent({
         renderer.setAnimationLoop(null)
       }
 
-      window.removeEventListener('resize', onResize)
+      window.removeEventListener('resize', onWindowResize)
 
       if (containerRef.value) {
         containerRef.value.innerHTML = ''

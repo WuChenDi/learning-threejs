@@ -13,11 +13,11 @@ export default defineComponent({
   setup() {
     const logger = useLogger()
 
-    let mixer: THREE.AnimationMixer
-    const clock = new THREE.Clock()
     const containerRef = ref<HTMLElement | null>(null)
+    const clock = new THREE.Clock()
 
-    let camera: THREE.PerspectiveCamera,
+    let mixer: THREE.AnimationMixer,
+      camera: THREE.PerspectiveCamera,
       scene: THREE.Scene,
       renderer: THREE.WebGLRenderer,
       stats: Stats
