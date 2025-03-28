@@ -1,174 +1,30 @@
 import { ClientOnly } from '#components'
+
 import * as THREE from 'three'
-
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
-import { defineComponent, nextTick, onMounted, ref } from 'vue'
+import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 export default defineComponent({
-  name: 'ThreeJSScene',
+  name: 'webglAnimationKeyframes',
   setup() {
     const logger = useLogger()
-
-    let mixer: THREE.AnimationMixer
+    const containerRef = ref<HTMLDivElement | null>(null)
     const clock = new THREE.Clock()
-    const containerRef = ref<HTMLElement | null>(null)
 
-    let camera: THREE.PerspectiveCamera,
+    let mixer: THREE.AnimationMixer,
+      camera: THREE.PerspectiveCamera,
       scene: THREE.Scene,
       renderer: THREE.WebGLRenderer,
+      controls: OrbitControls,
       stats: Stats
 
-    onMounted(() => {
-      nextTick(() => {
-        if (containerRef.value) {
-          init()
-          animate()
-        }
-        else {
-          logger.error('Container element not found')
-        }
-      })
-    })
-
-    function init() {
-      const container = containerRef.value
-      if (!container) {
-        logger.error('Container element is null')
-        return
-      }
-
-      // 获取容器的宽高而不是窗口的宽高
-      const width = container.clientWidth
-      const height = container.clientHeight
-
-      camera = new THREE.PerspectiveCamera(45, width / height, 1, 100)
-      camera.position.set(2, 3, -6)
-
-      scene = new THREE.Scene()
-
-      // 环境光
-      const hemiLight = new THREE.HemisphereLight(0xFFFFFF, 0x8D8D8D, 3)
-      hemiLight.position.set(0, 20, 0)
-      scene.add(hemiLight)
-
-      // 方向光
-      const dirLight = new THREE.DirectionalLight(0xFFFFFF, 3)
-      dirLight.position.set(-3, 10, -10)
-      dirLight.castShadow = true
-      dirLight.shadow.camera.top = 4
-      dirLight.shadow.camera.bottom = -4
-      dirLight.shadow.camera.left = -4
-      dirLight.shadow.camera.right = 4
-      dirLight.shadow.camera.near = 0.1
-      dirLight.shadow.camera.far = 40
-      scene.add(dirLight)
-
-      // 地面
-      const groundMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(200, 200),
-        new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false }),
-      )
-      groundMesh.rotation.x = -Math.PI / 2
-      groundMesh.receiveShadow = true
-      scene.add(groundMesh)
-
-      // 创建一个临时几何体，确保在模型加载前有内容显示
-      const geometry = new THREE.BoxGeometry(1, 1, 1)
-      const material = new THREE.MeshStandardMaterial({ color: 0x00FF00 })
-      const cube = new THREE.Mesh(geometry, material)
-      cube.position.set(0, 0.5, 0)
-      scene.add(cube)
-
-      // 加载 GLTF 模型
-      const loader = new GLTFLoader()
-      // 添加错误处理
-      loader.load(
-        '/models/gltf/RobotExpressive/RobotExpressive.glb',
-        (gltf) => {
-          const model = gltf.scene
-          model.position.set(0, 0, 0)
-          model.scale.set(1, 1, 1)
-          model.traverse((object) => {
-            if ((object as THREE.Mesh).isMesh) {
-              object.castShadow = true
-            }
-          })
-          scene.add(model)
-          // 移除临时几何体
-          scene.remove(cube)
-
-          // 创建动画混合器
-          mixer = new THREE.AnimationMixer(model)
-          const clips = gltf.animations
-
-          // 播放第一个动画
-          if (clips?.[0]) {
-            const action = mixer.clipAction(clips[0])
-            action.play()
-          }
-        },
-        // 添加进度回调
-        (xhr) => {
-          logger.log(`${xhr.loaded / xhr.total * 100}% loaded`)
-        },
-        // 添加错误回调
-        (error) => {
-          logger.error('An error happened during model loading:', error)
-        },
-      )
-
-      // 加载 HDR 环境贴图
-      new RGBELoader()
-        .load(
-          '/textures/equirectangular/venice_sunset_1k.hdr',
-          (texture) => {
-            texture.mapping = THREE.EquirectangularReflectionMapping
-            scene.background = texture
-            scene.environment = texture
-          },
-          undefined,
-          (error) => {
-            logger.error('An error happened during texture loading:', error)
-            // 如果HDR加载失败，设置一个默认背景色
-            scene.background = new THREE.Color(0x333333)
-          },
-        )
-
-      // 渲染器设置
-      renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.setPixelRatio(window.devicePixelRatio)
-      renderer.setSize(width, height)
-      renderer.shadowMap.enabled = true
-      renderer.toneMapping = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 1
-
-      // 清空容器并添加渲染器
-      while (container.firstChild) {
-        container.removeChild(container.firstChild)
-      }
-      container.appendChild(renderer.domElement)
-
-      // 控制器
-      const controls = new OrbitControls(camera, renderer.domElement)
-      controls.enablePan = false
-      controls.enableZoom = true
-      controls.target.set(0, 1, 0)
-      controls.update()
-
-      // 性能监控
-      stats = new Stats()
-      container.appendChild(stats.dom)
-
-      // 窗口大小调整
-      window.addEventListener('resize', onWindowResize)
-    }
-
-    function onWindowResize() {
-      if (!containerRef.value || !renderer) {
+    const onResize = () => {
+      if (!containerRef.value || !camera || !renderer) {
         return
       }
 
@@ -180,25 +36,115 @@ export default defineComponent({
       renderer.setSize(width, height)
     }
 
-    function animate() {
-      requestAnimationFrame(animate)
+    const animate = () => {
+      const delta = clock.getDelta() // 使用同一个时钟实例
 
-      const delta = clock.getDelta()
       if (mixer) {
         mixer.update(delta)
       }
 
-      if (stats) {
-        stats.update()
+      controls.update()
+      stats.update()
+      renderer.render(scene, camera)
+    }
+
+    const initScene = () => {
+      const container = containerRef.value
+      if (!container) {
+        logger.error('Container element is null')
+        return
       }
 
-      /**
-       *
-       */
-      if (renderer && scene && camera) {
-        renderer.render(scene, camera)
-      }
+      // Renderer setup
+      renderer = new THREE.WebGLRenderer({ antialias: true })
+      renderer.setPixelRatio(window.devicePixelRatio)
+      renderer.setSize(container.clientWidth, container.clientHeight)
+
+      // 清空容器并添加渲染器
+      container.innerHTML = ''
+      container.appendChild(renderer.domElement)
+
+      // Scene setup
+      scene = new THREE.Scene()
+      scene.background = new THREE.Color(0xBFE3DD)
+
+      const pmremGenerator = new THREE.PMREMGenerator(renderer)
+      scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture
+
+      // Camera setup
+      camera = new THREE.PerspectiveCamera(
+        40,
+        container.clientWidth / container.clientHeight,
+        1,
+        100,
+      )
+      camera.position.set(5, 2, 8)
+
+      // Controls
+      controls = new OrbitControls(camera, renderer.domElement)
+      controls.target.set(0, 0.5, 0)
+      controls.update()
+      controls.enablePan = false
+      controls.enableDamping = true
+
+      // Stats
+      stats = new Stats()
+      container.appendChild(stats.dom)
+
+      // Model and animation loader
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('jsm/libs/draco/gltf/')
+
+      const loader = new GLTFLoader()
+      loader.setDRACOLoader(dracoLoader)
+      loader.load(
+        'models/gltf/LittlestTokyo.glb',
+        (gltf) => {
+          const model = gltf.scene
+          model.position.set(1, 1, 0)
+          model.scale.set(0.01, 0.01, 0.01)
+          scene.add(model)
+
+          mixer = new THREE.AnimationMixer(model)
+          if (gltf.animations?.[0]) {
+            mixer.clipAction(gltf.animations[0]).play()
+          }
+
+          // 使用Three.js内置的动画循环
+          renderer.setAnimationLoop(animate)
+        },
+        undefined,
+        (error) => {
+          logger.error('Error loading model:', error)
+        },
+      )
+
+      window.addEventListener('resize', onResize)
     }
+
+    onMounted(() => {
+      nextTick(() => {
+        if (containerRef.value) {
+          initScene()
+        }
+        else {
+          logger.error('Container element not found')
+        }
+      })
+    })
+
+    onBeforeUnmount(() => {
+      // 清理动画循环
+      if (renderer) {
+        renderer.setAnimationLoop(null)
+      }
+
+      window.removeEventListener('resize', onResize)
+
+      if (containerRef.value) {
+        containerRef.value.innerHTML = ''
+      }
+    })
 
     return {
       containerRef,
