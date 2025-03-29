@@ -114,7 +114,9 @@ export default defineComponent({
           // 使用Three.js内置的动画循环
           renderer.setAnimationLoop(animate)
         },
-        undefined,
+        (xhr) => {
+          logger.log(`${xhr.loaded / xhr.total * 100}% loaded`)
+        },
         (error) => {
           logger.error('Error loading model:', error)
         },
