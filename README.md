@@ -1,75 +1,14 @@
-# Nuxt Minimal Starter
+# Learning Three.js
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+🚀 A comprehensive Three.js learning platform with interactive tutorials, practical examples, and hands-on demos for mastering 3D web development.
 
-## Setup
+Preview
 
-Make sure to install dependencies:
+- https://learning-threejs.pages.dev/
+- https://learning-threejs.pages.dev/skinning-morphing
 
-```bash
-# npm
-npm install
+<!-- ![](https://cdn.jsdelivr.net/gh/cdLab996/picture-lib/wudi/value-vision/og-image.png) -->
 
-# pnpm
-pnpm install
+## 📜 License
 
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+[MIT](./LICENSE) License &copy; 2025-PRESENT [wudi](https://github.com/WuChenDi)
