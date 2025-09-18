@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Stats from 'three/examples/jsm/libs/stats.module.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js'
 
 import { defineComponent, nextTick, onMounted, ref } from 'vue'
 
@@ -135,7 +135,7 @@ export default defineComponent({
       )
 
       // 加载 HDR 环境贴图
-      new RGBELoader()
+      new HDRLoader()
         .load(
           '/textures/equirectangular/venice_sunset_1k.hdr',
           (texture) => {
